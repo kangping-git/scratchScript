@@ -1,0 +1,26 @@
+{
+    "en": {
+        "ERR001": "Missing semicolon at the end of the statement.",
+        "ERR002": "Invalid assignment: Type mismatch.",
+        "ERR003": "Variable is already declared in the same scope.",
+        "ERR004": "Function is already defined with the same name.",
+        "ERR005": "Function does not return a value.",
+        "ERR006": "Unexpected error occurred. Please contact support.",
+        "ERR007": "Command line argument error. Please check the provided arguments.",
+        "WRN001": "Unused variable 'x'.",
+        "WRN002": "This feature is experimental and may change in future versions.",
+        "ERR008": "Token not found. Please check the provided token."
+    },
+    "ja": {
+        "ERR001": "ステートメントの末尾にセミコロンがありません。",
+        "ERR002": "無効な代入：データ型が一致しません。",
+        "ERR003": "変数はすでに同じスコープで宣言されています。",
+        "ERR004": "関数はすでに同じ名前で定義されています。",
+        "ERR005": "関数は値を返していません。",
+        "ERR006": "予期せぬエラーが発生しました。サポートにお問い合わせください。",
+        "ERR007": "コマンドライン引数エラー。提供された引数を確認してください。",
+        "WRN001": "未使用の変数 'x' です。",
+        "WRN002": "この機能は実験的であり、将来のバージョンで変更される可能性があります。",
+        "ERR008": "トークンが見つかりません。提供されたトークンを確認してください。"
+    }
+}

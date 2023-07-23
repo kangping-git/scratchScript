@@ -1,0 +1,19 @@
+{
+    "name": "scratch-language-compiler",
+    "version": "1.0.0",
+    "description": "",
+    "main": "dist/main.js",
+    "keywords": [
+        "scratch",
+        "compiler",
+        "language"
+    ],
+    "bin": {
+        "scl": "dist/main.js"
+    },
+    "author": "Kangping",
+    "license": "MIT",
+    "dependencies": {
+        "@types/node": "^20.4.3"
+    }
+}
