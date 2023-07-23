@@ -7,9 +7,12 @@
         "ERR005": "Function does not return a value.",
         "ERR006": "Unexpected error occurred. Please contact support.",
         "ERR007": "Command line argument error. Please check the provided arguments.",
+        "ERR008": "Token not found. Please check the provided token.",
+        "ERR009": "Syntax error. Please review your code for proper syntax.",
+        "ERR010": "Unclosed parenthesis. Please check your code and make sure all parentheses are closed.",
+        "ERR011": "Missing comma in the function arguments list. Please check your function call and add the required comma.",
         "WRN001": "Unused variable 'x'.",
-        "WRN002": "This feature is experimental and may change in future versions.",
-        "ERR008": "Token not found. Please check the provided token."
+        "WRN002": "This feature is experimental and may change in future versions."
     },
     "ja": {
         "ERR001": "ステートメントの末尾にセミコロンがありません。",
@@ -19,8 +22,11 @@
         "ERR005": "関数は値を返していません。",
         "ERR006": "予期せぬエラーが発生しました。サポートにお問い合わせください。",
         "ERR007": "コマンドライン引数エラー。提供された引数を確認してください。",
+        "ERR008": "トークンが見つかりません。提供されたトークンを確認してください。",
+        "ERR009": "構文エラーです。コードを適切な構文に修正してください。",
+        "ERR010": "閉じられていない括弧があります。コードを確認し、全ての括弧が閉じられていることを確認してください。",
+        "ERR011": "関数の引数リストにコンマが足りません。関数呼び出しを確認し、必要なコンマを追加してください。",
         "WRN001": "未使用の変数 'x' です。",
-        "WRN002": "この機能は実験的であり、将来のバージョンで変更される可能性があります。",
-        "ERR008": "トークンが見つかりません。提供されたトークンを確認してください。"
+        "WRN002": "この機能は実験的であり、将来のバージョンで変更される可能性があります。"
     }
 }

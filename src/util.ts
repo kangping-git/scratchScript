@@ -31,8 +31,8 @@ function message(
         let line = Number(args[1]);
         let char = Number(args[2]);
         let len = Number(args[3]);
-        m = line + 1 + "|" + code[line] + "\n";
-        m += " ".repeat((line + 1 + "|").length + char) + "~".repeat(len);
+        m = line + 1 + "| " + code[line] + "\n";
+        m += " ".repeat((line + 1 + "| ").length + char) + "~".repeat(len);
     }
     if (id in errorMessagesData[lang]) {
         let MSG = errorMessagesData[lang][id];

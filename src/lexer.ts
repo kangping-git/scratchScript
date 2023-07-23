@@ -43,7 +43,7 @@ type Token =
 function lexer(code: string) {
     // MEMO:Tokenに分解
     let tokens: string[] = code.split(
-        /( +|\r\n|\r|\n|\/\/[^(\r\n|\r|\n)]*|let|number|boolean|:|=>|=|-?\d+\.\d+|-?\d+|[a-zA-Z_]\w*|;|"[^"]*"|\(|\)|\[|\]|{|})/
+        /(\r\n|\r|\n|\/\/[^(\r\n|\r|\n)]*(\r\n|\r|\n)| +|let|number|:|=>|=|-?\d+\.\d+|-?\d+|[a-zA-Z_]\w*|;|"[^"]*"|\(|\)|\[|\]|{|})/
     );
     function addToken(token: {
         type: TokenType;
@@ -59,13 +59,15 @@ function lexer(code: string) {
     let line: number = 0;
     let char: number = 0;
     let keyword: string[] = "if,else,for,function,let".split(",");
-    let types: string[] = "number,string,boolean".split(",");
+    let types: string[] = "number,string".split(",");
     for (let i in tokens) {
         let token = tokens[i];
 
         // MEMO:空白の時の対処
-        if (token[0] == " " || token == "" || token == void 0) {
-            char += token.length;
+        if (token == void 0 || token[0] == " " || token == "") {
+            if (token != void 0) {
+                char += token.length;
+            }
             continue;
         }
         // MEMO:改行の時の対処
@@ -108,6 +110,14 @@ function lexer(code: string) {
         if (token.match(/^[a-zA-Z_]\w*$/)) {
             addToken({
                 type: TokenType.identifier,
+                value: token,
+            });
+            continue;
+        }
+        // MEMO:数値型
+        if (token.match(/^-?\d+\.\d+|-?\d+$/)) {
+            addToken({
+                type: TokenType.number,
                 value: token,
             });
             continue;

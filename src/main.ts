@@ -3,6 +3,7 @@ import * as path from "path";
 import * as fs from "fs";
 import { alreadyError, lang, message } from "./util";
 import * as lexer from "./lexer";
+import * as parser from "./parser";
 
 // MEMO:引数がないときに出力するテキスト
 let CLI = {
@@ -18,7 +19,7 @@ Options:
 
 Examples:
     scl compile myscript.ss -o output.sb3
-    scl create myproject`,
+    scl create my-project`,
     ja: `使用方法: scl <コマンド> [オプション]
 
 コマンド:
@@ -31,7 +32,7 @@ Examples:
 
 例:
     scl compile myscript.ss -o output.sb3
-    scl create myproject`,
+    scl create my-project`,
 };
 
 // MEMO:コマンド解析
@@ -80,8 +81,10 @@ function main(args: string[]) {
                     message("ERR007");
                     return;
                 }
-                let tokens = lexer.lexer(fs.readFileSync(inputFile, "utf-8"));
+                let code = fs.readFileSync(inputFile, "utf-8");
+                let tokens = lexer.lexer(code);
                 if (!alreadyError) {
+                    let ast = parser.parser(tokens, code);
                 }
                 return;
             case "create":
