@@ -33,6 +33,8 @@ type Token =
     | { type: TokenType.arrow; value: string; x: number; y: number }
     | { type: TokenType.leftParentheses; value: string; x: number; y: number }
     | { type: TokenType.rightParentheses; value: string; x: number; y: number }
+    | { type: TokenType.leftBraces; value: string; x: number; y: number }
+    | { type: TokenType.rightBraces; value: string; x: number; y: number }
     | {
           type: TokenType.substitutionOperator;
           value: string;

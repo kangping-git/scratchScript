@@ -6,6 +6,7 @@ enum NodeType {
     String,
     Number,
     InitVar,
+    ArrowFunction,
 }
 type ASTNode =
     | {
@@ -28,6 +29,14 @@ type ASTNode =
               name: string;
               value: ASTNode;
           };
+      }
+    | {
+          type: NodeType.ArrowFunction;
+          args: {
+              type: string;
+              name: string;
+          }[];
+          func: ASTNode[];
       };
 
 type parseLineReturn = {
@@ -36,6 +45,7 @@ type parseLineReturn = {
 };
 
 let $code: string[] = [];
+let $$code: string = "";
 
 let varTypes: string[] = ["number", "string"];
 
@@ -43,6 +53,7 @@ let varTypes: string[] = ["number", "string"];
 function parser(token: Token[], code: string) {
     let asts: ASTNode[] = [];
     $code = code.split(/\r\n|\r|\n/);
+    $$code = code;
     while (token.length > 0) {
         let r = parseLine(token);
         token = r.token;
@@ -191,6 +202,116 @@ function parseLine(token: Token[], mustSemi = true) {
                         },
                     };
                     returnAst.token = token.slice(4);
+                }
+            }
+            break;
+        case TokenType.leftParentheses:
+            // MEMO:アロー関数
+            let r: ASTNode = {
+                type: NodeType.ArrowFunction,
+                args: [],
+                func: [],
+            };
+            // MEMO:アロー関数の引数解析
+            let depth = 1;
+            let $args: Token[] = [];
+            let i: number;
+            returnAst.token.shift();
+            for (i = 1; i < token.length; ++i) {
+                if (token[i].type == TokenType.leftParentheses) {
+                    depth += 1;
+                } else if (token[i].type == TokenType.rightParentheses) {
+                    depth -= 1;
+                    if (depth == 0) {
+                        returnAst.token.shift();
+                        break;
+                    }
+                }
+                $args.push(token[i]);
+                returnAst.token.shift();
+            }
+            let c = 0;
+            for (let i in $args) {
+                if (c >= 2) {
+                    if ($args[i].type == TokenType.comma) {
+                        c += 1;
+                        continue;
+                    } else if ($args[i].type == TokenType.identifier) {
+                        if (c >= 3) {
+                            c = 0;
+                            r.args.push({
+                                type: "",
+                                name: $args[i].value,
+                            });
+                            continue;
+                        } else {
+                            message(
+                                "ERR011",
+                                {},
+                                $code,
+                                token[0].y,
+                                token[0].x,
+                                token[0].value.length
+                            );
+                            return returnAst;
+                        }
+                    }
+                } else if (c == 0) {
+                    if ($args[i].type == TokenType.colon) {
+                        c += 1;
+                        continue;
+                    }
+                } else if (c == 1) {
+                    if ($args[i].type == TokenType.type) {
+                        r.args[r.args.length - 1].type = $args[i].value;
+                        c += 1;
+                        continue;
+                    }
+                }
+                message(
+                    "ERR009",
+                    {},
+                    $code,
+                    token[0].y,
+                    token[0].x,
+                    token[0].value.length
+                );
+                return returnAst;
+            }
+            if (token[i + 1].type == TokenType.arrow) {
+                if (token[i + 2].type == TokenType.leftBraces) {
+                    let j;
+                    let depth = 1;
+                    let t: Token[] = [];
+                    for (j = i + 3; j < token.length; ++j) {
+                        if (token[j].type == TokenType.leftBraces) {
+                            depth += 1;
+                        } else if (token[j].type == TokenType.rightBraces) {
+                            depth -= 1;
+                            if (depth == 0) {
+                                break;
+                            }
+                        }
+                        t.push(token[j]);
+                        returnAst.token.shift();
+                    }
+                    returnAst.token.shift();
+                    returnAst.token.shift();
+                    if (j == token.length) {
+                        message(
+                            "ERR009",
+                            {},
+                            $code,
+                            token[0].y,
+                            token[0].x,
+                            token[0].value.length
+                        );
+                        return returnAst;
+                    } else {
+                        let R = parser(t, $$code);
+                        r.func = R;
+                        returnAst.ast = r;
+                    }
                 }
             }
             break;
