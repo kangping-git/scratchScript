@@ -81,6 +81,9 @@ function main(args: string[]) {
                     message("ERR007");
                     return;
                 }
+                if (args.includes("--debug")) {
+                    process.stdout.write("\x1bc");
+                }
                 let code = fs.readFileSync(inputFile, "utf-8");
                 let tokens = lexer.lexer(code);
                 if (!alreadyError) {

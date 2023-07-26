@@ -1,31 +1,40 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="339" height="75" viewBox="0 0 339 75">
+<svg xmlns="http://www.w3.org/2000/svg" width="295" height="110" viewBox="0 0 295 110">
     <style>
         @keyframes line {
             0% {
                 stroke-dashoffset: 100%;
                 fill: transparent;
+                stroke-width: 1;
             }
 
             50% {
                 fill: transparent;
+                stroke-dashoffset: 0;
+                stroke-width: 3;
             }
 
             100% {
-                stroke-dashoffset: 0;
                 fill: white;
+                stroke-width: 1;
             }
         }
 
-        text {
+        .text {
             fill: white;
             stroke: #da7b00;
             stroke-dasharray: 100%;
             stroke-dashoffset: 0;
-            stroke-width: 1;
-            -webkit-animation: line 1s ease-in 0s;
-            animation: line 1s ease-in 0s;
-            font-family: Arial, Helvetica, sans-serif;
+            font-weight: 900;
+            -webkit-animation: line 2s ease-in-out;
+            animation: line 2s ease-in-out;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        .text1 {
+            -webkit-animation-delay: 0.2s;
+            animation-delay: 0.2s;
         }
     </style>
-    <text id="Temp" x="0" y="50" font-size="50">ScratchScript</text>
+    <text class="text" x="0" y="55" font-size="50">Scratch</text>
+    <text class="text text1" x="110" y="90" font-size="50">Script</text>
 </svg>

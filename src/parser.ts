@@ -7,6 +7,8 @@ enum NodeType {
     Number,
     InitVar,
     ArrowFunction,
+    Operator,
+    GetVar,
 }
 type ASTNode =
     | {
@@ -37,6 +39,15 @@ type ASTNode =
               name: string;
           }[];
           func: ASTNode[];
+      }
+    | {
+          type: NodeType.Operator;
+          left: ASTNode;
+          expression: { op: string; right: ASTNode }[];
+      }
+    | {
+          type: NodeType.GetVar;
+          varName: string;
       };
 
 type parseLineReturn = {
@@ -47,7 +58,16 @@ type parseLineReturn = {
 let $code: string[] = [];
 let $$code: string = "";
 
-let varTypes: string[] = ["number", "string"];
+let varTypes: { [key: string]: ASTNode } = {
+    string: {
+        type: NodeType.String,
+        value: "",
+    },
+    number: {
+        type: NodeType.Number,
+        value: 0,
+    },
+};
 
 // MEMO:すべてのコードのパーサー
 function parser(token: Token[], code: string) {
@@ -65,258 +85,218 @@ function parser(token: Token[], code: string) {
 }
 
 // MEMO:一命令ごとのパーサー
-function parseLine(token: Token[], mustSemi = true) {
+function parseLine(
+    token: Token[],
+    mustSemi: boolean = true,
+    NoOperator: boolean = false
+) {
     let returnAst: parseLineReturn = {
         token: token.slice(1),
         ast: null,
     };
-    let firstToken = token[0];
-    switch (firstToken.type) {
-        case TokenType.semi:
-            // MEMO:セミコロンの時はスキップ
-            return returnAst;
-        case TokenType.identifier:
-            if (token.length > 1) {
-                if (token[1].type == TokenType.leftParentheses) {
-                    let depth: number = 1;
-                    let t = [];
+    function TokenIF(minTokenLength: number, ...checkToken: TokenType[]) {
+        return (
+            minTokenLength <= token.length &&
+            checkToken.reduce(
+                (
+                    previousValue: boolean,
+                    currentValue: TokenType,
+                    currentIndex: number
+                ) => {
+                    if (currentValue !== token[currentIndex].type) {
+                        return false;
+                    }
+                    return previousValue;
+                },
+                true
+            )
+        );
+    }
+    function AutoTokenIF(...checkToken: TokenType[]) {
+        return (
+            checkToken.length <= token.length &&
+            checkToken.reduce(
+                (
+                    previousValue: boolean,
+                    currentValue: TokenType,
+                    currentIndex: number
+                ) => {
+                    if (currentValue !== token[currentIndex].type) {
+                        return false;
+                    }
+                    return previousValue;
+                },
+                true
+            )
+        );
+    }
+    function tokenError(errorCode: string, errorToken: Token) {
+        message(
+            errorCode,
+            {},
+            $code,
+            errorToken.y,
+            errorToken.x,
+            errorToken.value.length
+        );
+    }
+
+    if (TokenIF(3, TokenType.identifier, TokenType.leftParentheses)) {
+        // MEMO:関数
+        let args = [];
+        let depth = 1;
+        let i: number;
+        for (i = 2; i < token.length; ++i) {
+            if (token[i].type == TokenType.leftParentheses) {
+                depth += 1;
+            } else if (token[i].type == TokenType.rightParentheses) {
+                depth -= 1;
+                if (depth == 0) {
                     returnAst.token.shift();
-                    for (let i = 2; i < token.length; ++i) {
-                        if (token[i].type == TokenType.leftParentheses) {
-                            depth += 1;
-                        } else if (
-                            token[i].type == TokenType.rightParentheses
-                        ) {
-                            depth -= 1;
-                            if (depth == 0) {
-                                returnAst.token.shift();
-                                break;
-                            }
-                        }
-                        t.push(token[i]);
-                        returnAst.token.shift();
-                    }
-                    if (depth !== 0) {
-                        message(
-                            "ERR010",
-                            {},
-                            $code,
-                            token[0].y,
-                            token[0].x,
-                            token[0].value.length
-                        );
-                    } else {
-                        let args: ASTNode[] = [];
-                        while (t.length > 0) {
-                            let r = parseLine(t, false);
-                            t = r.token;
-                            if (t.length > 0) {
-                                if (t[0].type !== TokenType.comma) {
-                                    message(
-                                        "ERR011",
-                                        {},
-                                        $code,
-                                        t[0].y,
-                                        t[0].x,
-                                        t[0].value.length
-                                    );
-                                } else {
-                                    t.shift();
-                                }
-                            }
-                            if (r.ast != null) {
-                                args.push(r.ast);
-                            }
-                        }
-                        returnAst.ast = {
-                            type: NodeType.FunctionCaller,
-                            callFunctionName: firstToken.value,
-                            args: args,
-                        };
-                    }
+                    returnAst.token.shift();
+                    break;
                 }
             }
-            break;
-        case TokenType.string:
-            // MEMO:文字列
-            returnAst.ast = {
-                type: NodeType.String,
-                value: firstToken.value.slice(1, -1),
-            };
-            break;
-        case TokenType.number:
-            // MEMO:数値
-            returnAst.ast = {
-                type: NodeType.Number,
-                value: Number(firstToken.value),
-            };
-            break;
-        case TokenType.keyword:
-            // MEMO:変数初期化
-            if (
-                token.length > 5 &&
-                token[1].type == TokenType.identifier &&
-                token[2].type == TokenType.colon &&
-                token[3].type == TokenType.type &&
-                token[4].type == TokenType.substitutionOperator
-            ) {
-                // MEMO:変数初期化 引数あり
-                let r = parseLine(token.slice(5), false);
-                returnAst.token = r.token;
-                if (r.ast == null) {
-                    message(
-                        "ERR011",
-                        {},
-                        $code,
-                        token[5].y,
-                        token[5].x,
-                        token[5].value.length
-                    );
-                } else {
-                    returnAst.ast = {
-                        type: NodeType.InitVar,
-                        varData: {
-                            name: token[1].value,
-                            type: token[3].value,
-                            value: r.ast,
-                        },
-                    };
-                    returnAst.token = r.token;
-                }
-            } else if (token.length > 3) {
-                if (
-                    token[1].type == TokenType.identifier &&
-                    token[2].type == TokenType.colon &&
-                    token[3].type == TokenType.type
-                ) {
-                    // MEMO:変数初期化 引数なし
-                    returnAst.ast = {
-                        type: NodeType.InitVar,
-                        varData: {
-                            name: token[1].value,
-                            type: token[3].value,
-                            value:
-                                token[3].value == "string"
-                                    ? { type: NodeType.String, value: "" }
-                                    : { type: NodeType.Number, value: 0 },
-                        },
-                    };
-                    returnAst.token = token.slice(4);
-                }
-            }
-            break;
-        case TokenType.leftParentheses:
-            // MEMO:アロー関数
-            let r: ASTNode = {
-                type: NodeType.ArrowFunction,
-                args: [],
-                func: [],
-            };
-            // MEMO:アロー関数の引数解析
-            let depth = 1;
-            let $args: Token[] = [];
-            let i: number;
+            args.push(token[i]);
             returnAst.token.shift();
-            for (i = 1; i < token.length; ++i) {
-                if (token[i].type == TokenType.leftParentheses) {
-                    depth += 1;
-                } else if (token[i].type == TokenType.rightParentheses) {
-                    depth -= 1;
-                    if (depth == 0) {
-                        returnAst.token.shift();
+        }
+        let argsMain: ASTNode[] = [];
+        while (args.length > 0) {
+            let r = parseLine(args, false);
+            if (r.ast == null) {
+                args = r.token;
+                continue;
+            }
+            args = r.token;
+            argsMain.push(r.ast);
+            if (args.length > 0) {
+                if (args[0].type !== TokenType.comma) {
+                    // MEMO:コンマが存在しない時のエラー
+                    tokenError("ERR011", args[0]);
+                    continue;
+                }
+                args.shift();
+            }
+        }
+        returnAst.ast = {
+            type: NodeType.FunctionCaller,
+            args: argsMain,
+            callFunctionName: token[0].value,
+        };
+    } else if (AutoTokenIF(TokenType.string)) {
+        // MEMO:文字列
+        returnAst.ast = {
+            type: NodeType.String,
+            value: token[0].value.slice(1, -1),
+        };
+    } else if (
+        AutoTokenIF(
+            TokenType.variableDeclaration,
+            TokenType.identifier,
+            TokenType.colon,
+            TokenType.type
+        )
+    ) {
+        if (
+            TokenIF(
+                6,
+                TokenType.variableDeclaration,
+                TokenType.identifier,
+                TokenType.colon,
+                TokenType.type,
+                TokenType.substitutionOperator
+            )
+        ) {
+            // 初期化値がある変数宣言
+            let r = parseLine(token.slice(5));
+            if (r.ast !== null) {
+                returnAst.ast = {
+                    type: NodeType.InitVar,
+                    varData: {
+                        type: token[3].value,
+                        name: token[1].value,
+                        value: r.ast,
+                    },
+                };
+            }
+            returnAst.token = r.token;
+        } else {
+            returnAst.ast = {
+                type: NodeType.InitVar,
+                varData: {
+                    type: token[3].value,
+                    name: token[1].value,
+                    value: varTypes[token[3].value],
+                },
+            };
+            returnAst.token = token.slice(4);
+        }
+    } else if (AutoTokenIF(TokenType.semi)) {
+        return returnAst;
+    } else if (TokenIF(5, TokenType.leftParentheses)) {
+        let argsRaw = [];
+        let depth = 1;
+        let i: number = 1;
+        for (; i < token.length; ++i) {
+            if (token[i].type == TokenType.leftParentheses) {
+                depth += 1;
+            } else if (token[i].type == TokenType.rightParentheses) {
+                depth -= 1;
+                if (depth == 0) {
+                    break;
+                }
+            }
+            argsRaw.push(token[i]);
+        }
+        if (
+            token[i + 1].type == TokenType.arrow &&
+            token[i + 2].type == TokenType.leftBraces
+        ) {
+            if (![2, 3].includes(i % 4)) {
+                let args = [];
+                for (let j = 0; j < argsRaw.length; j += 4) {
+                    if (
+                        token[j + 3].type == TokenType.type &&
+                        token[j + 1].type == TokenType.identifier
+                    ) {
+                        args.push({
+                            type: token[j + 3].value,
+                            name: token[j + 1].value,
+                        });
+                    } else {
+                        tokenError("ERR011", token[j + 1]);
                         break;
                     }
                 }
-                $args.push(token[i]);
-                returnAst.token.shift();
-            }
-            let c = 0;
-            for (let i in $args) {
-                if (c >= 2) {
-                    if ($args[i].type == TokenType.comma) {
-                        c += 1;
-                        continue;
-                    } else if ($args[i].type == TokenType.identifier) {
-                        if (c >= 3) {
-                            c = 0;
-                            r.args.push({
-                                type: "",
-                                name: $args[i].value,
-                            });
-                            continue;
-                        } else {
-                            message(
-                                "ERR011",
-                                {},
-                                $code,
-                                token[0].y,
-                                token[0].x,
-                                token[0].value.length
-                            );
-                            return returnAst;
+                let functionToken: Token[] = [];
+                i += 3;
+                depth = 1;
+                for (; i < token.length; ++i) {
+                    if (token[i].type == TokenType.leftBraces) {
+                        depth += 1;
+                    } else if (token[i].type == TokenType.rightBraces) {
+                        depth -= 1;
+                        if (depth == 0) {
+                            break;
                         }
                     }
-                } else if (c == 0) {
-                    if ($args[i].type == TokenType.colon) {
-                        c += 1;
-                        continue;
-                    }
-                } else if (c == 1) {
-                    if ($args[i].type == TokenType.type) {
-                        r.args[r.args.length - 1].type = $args[i].value;
-                        c += 1;
-                        continue;
-                    }
+                    functionToken.push(token[i]);
                 }
-                message(
-                    "ERR009",
-                    {},
-                    $code,
-                    token[0].y,
-                    token[0].x,
-                    token[0].value.length
-                );
-                return returnAst;
+                let asts = parser(functionToken, $$code);
+                returnAst.ast = {
+                    type: NodeType.ArrowFunction,
+                    args: args,
+                    func: asts,
+                };
+                returnAst.token = token.slice(i + 1);
             }
-            if (token[i + 1].type == TokenType.arrow) {
-                if (token[i + 2].type == TokenType.leftBraces) {
-                    let j;
-                    let depth = 1;
-                    let t: Token[] = [];
-                    for (j = i + 3; j < token.length; ++j) {
-                        if (token[j].type == TokenType.leftBraces) {
-                            depth += 1;
-                        } else if (token[j].type == TokenType.rightBraces) {
-                            depth -= 1;
-                            if (depth == 0) {
-                                break;
-                            }
-                        }
-                        t.push(token[j]);
-                        returnAst.token.shift();
-                    }
-                    returnAst.token.shift();
-                    returnAst.token.shift();
-                    if (j == token.length) {
-                        message(
-                            "ERR009",
-                            {},
-                            $code,
-                            token[0].y,
-                            token[0].x,
-                            token[0].value.length
-                        );
-                        return returnAst;
-                    } else {
-                        let R = parser(t, $$code);
-                        r.func = R;
-                        returnAst.ast = r;
-                    }
-                }
-            }
-            break;
+        }
+    } else if (AutoTokenIF(TokenType.identifier)) {
+        returnAst.ast = {
+            type: NodeType.GetVar,
+            varName: token[0].value,
+        };
     }
-
     if (returnAst.ast == null) {
         // MEMO:構文が存在しない時のエラー
         message(
@@ -341,6 +321,42 @@ function parseLine(token: Token[], mustSemi = true) {
             token[0].x,
             token[0].value.length
         );
+    } else {
+        if (mustSemi) {
+            returnAst.token.shift();
+        } else {
+            if (
+                !NoOperator &&
+                returnAst.token.length > 1 &&
+                returnAst.token[0].type == TokenType.operator
+            ) {
+                let astTemp = { ...returnAst.ast };
+                let tt: Token[] = [...returnAst.token];
+                returnAst.ast = {
+                    type: NodeType.Operator,
+                    left: astTemp,
+                    expression: [],
+                };
+                while (tt.length > 0) {
+                    if (tt[0].type != TokenType.operator) {
+                        break;
+                    }
+                    let op = tt[0].value;
+                    tt.shift();
+                    let r = parseLine(tt, false, true);
+                    tt = r.token;
+                    if (r.ast == null) {
+                        returnAst.ast.expression = [];
+                        break;
+                    }
+                    returnAst.ast.expression.push({
+                        op: op,
+                        right: r.ast,
+                    });
+                }
+                returnAst.token = tt;
+            }
+        }
     }
     return returnAst;
 }

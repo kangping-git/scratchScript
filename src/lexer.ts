@@ -17,12 +17,19 @@ enum TokenType {
     leftBraces = "leftBraces",
     rightBraces = "rightBraces",
     substitutionOperator = "substitutionOperator",
+    variableDeclaration = "variableDeclaration",
 }
 
 // MEMO:Token宣言
 type Token =
     | { type: TokenType.keyword; value: string; x: number; y: number }
     | { type: TokenType.type; value: string; x: number; y: number }
+    | {
+          type: TokenType.variableDeclaration;
+          value: string;
+          x: number;
+          y: number;
+      }
     | { type: TokenType.identifier; value: string; x: number; y: number }
     | { type: TokenType.colon; value: string; x: number; y: number }
     | { type: TokenType.string; value: string; x: number; y: number }
@@ -34,6 +41,7 @@ type Token =
     | { type: TokenType.leftParentheses; value: string; x: number; y: number }
     | { type: TokenType.rightParentheses; value: string; x: number; y: number }
     | { type: TokenType.leftBraces; value: string; x: number; y: number }
+    | { type: TokenType.rightBraces; value: string; x: number; y: number }
     | { type: TokenType.rightBraces; value: string; x: number; y: number }
     | {
           type: TokenType.substitutionOperator;
@@ -60,7 +68,7 @@ function lexer(code: string) {
     let t: Token[] = [];
     let line: number = 0;
     let char: number = 0;
-    let keyword: string[] = "if,else,for,function,let".split(",");
+    let keyword: string[] = "if,else,for,function".split(",");
     let types: string[] = "number,string".split(",");
     for (let i in tokens) {
         let token = tokens[i];
@@ -88,6 +96,14 @@ function lexer(code: string) {
         if (token == ";") {
             addToken({
                 type: TokenType.semi,
+                value: token,
+            });
+            continue;
+        }
+        // MEMO:変数宣言
+        if (token == "let") {
+            addToken({
+                type: TokenType.variableDeclaration,
                 value: token,
             });
             continue;

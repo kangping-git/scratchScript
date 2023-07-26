@@ -1,4 +1,6 @@
-# ![ScratchScript](Images/Logo.svg)
+<p align="center">
+  <img src="Images/Logo.svg" />
+</p>
 
 ScratchScript は、高級言語で Scratch プロジェクトを作成するためのコンパイラです。Typescript に似た文法を持ち、Scratch のプロジェクトファイル（sb3）にコンパイルすることができます。CLI を利用して簡単にコンパイルが行えます。
 

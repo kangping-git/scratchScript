@@ -51,6 +51,7 @@ function message(
                 console.warn(m);
             }
         }
+        console.log();
     } else {
         message("ERR006");
     }
