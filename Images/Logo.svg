@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="339" height="75" viewBox="0 0 339 75">
+    <style>
+        @keyframes line {
+            0% {
+                stroke-dashoffset: 100%;
+                fill: transparent;
+            }
+
+            50% {
+                fill: transparent;
+            }
+
+            100% {
+                stroke-dashoffset: 0;
+                fill: white;
+            }
+        }
+
+        text {
+            fill: white;
+            stroke: #da7b00;
+            stroke-dasharray: 100%;
+            stroke-dashoffset: 0;
+            stroke-width: 1;
+            -webkit-animation: line 1s ease-in 0s;
+            animation: line 1s ease-in 0s;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+    </style>
+    <text id="Temp" x="0" y="50" font-size="50">ScratchScript</text>
+</svg>
