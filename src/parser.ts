@@ -15,14 +15,26 @@ type ASTNode =
           type: NodeType.FunctionCaller;
           callFunctionName: string;
           args: ASTNode[];
+          x1: number;
+          y1: number;
+          x2: number;
+          y2: number;
       }
     | {
           type: NodeType.String;
           value: string;
+          x1: number;
+          y1: number;
+          x2: number;
+          y2: number;
       }
     | {
           type: NodeType.Number;
           value: number;
+          x1: number;
+          y1: number;
+          x2: number;
+          y2: number;
       }
     | {
           type: NodeType.InitVar;
@@ -31,6 +43,10 @@ type ASTNode =
               name: string;
               value: ASTNode;
           };
+          x1: number;
+          y1: number;
+          x2: number;
+          y2: number;
       }
     | {
           type: NodeType.ArrowFunction;
@@ -39,15 +55,27 @@ type ASTNode =
               name: string;
           }[];
           func: ASTNode[];
+          x1: number;
+          y1: number;
+          x2: number;
+          y2: number;
       }
     | {
           type: NodeType.Operator;
           left: ASTNode;
           expression: { op: string; right: ASTNode }[];
+          x1: number;
+          y1: number;
+          x2: number;
+          y2: number;
       }
     | {
           type: NodeType.GetVar;
           varName: string;
+          x1: number;
+          y1: number;
+          x2: number;
+          y2: number;
       };
 
 type parseLineReturn = {
@@ -62,10 +90,18 @@ let varTypes: { [key: string]: ASTNode } = {
     string: {
         type: NodeType.String,
         value: "",
+        x1: 0,
+        y1: 0,
+        x2: 0,
+        y2: 0,
     },
     number: {
         type: NodeType.Number,
         value: 0,
+        x1: 0,
+        y1: 0,
+        x2: 0,
+        y2: 0,
     },
 };
 
@@ -182,12 +218,20 @@ function parseLine(
             type: NodeType.FunctionCaller,
             args: argsMain,
             callFunctionName: token[0].value,
+            x1: token[0].x,
+            y1: token[0].y,
+            x2: token[0].x + token[0].value.length,
+            y2: token[0].y,
         };
     } else if (AutoTokenIF(TokenType.string)) {
         // MEMO:文字列
         returnAst.ast = {
             type: NodeType.String,
             value: token[0].value.slice(1, -1),
+            x1: token[0].x,
+            y1: token[0].y,
+            x2: token[0].x + token[0].value.length,
+            y2: token[0].y,
         };
     } else if (
         AutoTokenIF(
@@ -217,6 +261,13 @@ function parseLine(
                         name: token[1].value,
                         value: r.ast,
                     },
+                    x1: token[0].x,
+                    y1: token[0].y,
+                    x2:
+                        token[token.length - r.token.length - 1].x +
+                        token[token.length - r.token.length - 1].value.length -
+                        1,
+                    y2: token[token.length - r.token.length - 1].y,
                 };
             }
             returnAst.token = r.token;
@@ -228,6 +279,10 @@ function parseLine(
                     name: token[1].value,
                     value: varTypes[token[3].value],
                 },
+                x1: 0,
+                y1: 0,
+                x2: 0,
+                y2: 0,
             };
             returnAst.token = token.slice(4);
         }
@@ -287,6 +342,10 @@ function parseLine(
                     type: NodeType.ArrowFunction,
                     args: args,
                     func: asts,
+                    x1: token[0].x,
+                    y1: token[0].y,
+                    x2: token[0].x + token[0].value.length,
+                    y2: token[0].y,
                 };
                 returnAst.token = token.slice(i + 1);
             }
@@ -295,6 +354,10 @@ function parseLine(
         returnAst.ast = {
             type: NodeType.GetVar,
             varName: token[0].value,
+            x1: token[0].x,
+            y1: token[0].y,
+            x2: token[0].x + token[0].value.length,
+            y2: token[0].y,
         };
     }
     if (returnAst.ast == null) {
@@ -336,6 +399,10 @@ function parseLine(
                     type: NodeType.Operator,
                     left: astTemp,
                     expression: [],
+                    x1: astTemp.x1,
+                    y1: astTemp.y1,
+                    x2: 0,
+                    y2: 0,
                 };
                 while (tt.length > 0) {
                     if (tt[0].type != TokenType.operator) {
@@ -353,10 +420,21 @@ function parseLine(
                         op: op,
                         right: r.ast,
                     });
+                    returnAst.ast.x2 = r.ast.x2;
+                    returnAst.ast.y2 = r.ast.y2;
                 }
                 returnAst.token = tt;
             }
         }
+    }
+    if (returnAst.ast != null) {
+        returnAst.ast.x1 = token[0].x;
+        returnAst.ast.y1 = token[0].y;
+        returnAst.ast.x2 =
+            token[token.length - returnAst.token.length - 1].x +
+            token[token.length - returnAst.token.length - 1].value.length -
+            1;
+        returnAst.ast.y2 = token[token.length - returnAst.token.length - 1].y;
     }
     return returnAst;
 }

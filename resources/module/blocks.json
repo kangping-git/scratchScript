@@ -1,1 +1,23 @@
-{}
+{
+    "say": {
+        "args": ["any"],
+        "argsName": ["MESSAGE"],
+        "opcode": "looks_say",
+        "type": "sprite only",
+        "return": null
+    },
+    "wait": {
+        "args": ["number"],
+        "argsName": ["DURATION"],
+        "opcode": "control_wait",
+        "type": "all",
+        "return": null
+    },
+    "add": {
+        "args": ["number", "number"],
+        "argsName": ["NUM1", "NUM2"],
+        "opcode": "operator_add",
+        "type": "all",
+        "return": "number"
+    }
+}
