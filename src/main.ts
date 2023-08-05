@@ -4,6 +4,7 @@ import * as fs from "fs";
 import { alreadyError, lang, message } from "./util";
 import * as lexer from "./lexer";
 import * as parser from "./parser";
+import * as semantic from "./semantic";
 
 // MEMO:引数がないときに出力するテキスト
 let CLI = {

@@ -7,7 +7,6 @@ enum NodeType {
     Number,
     InitVar,
     ArrowFunction,
-    Operator,
     GetVar,
 }
 type ASTNode =
@@ -55,15 +54,6 @@ type ASTNode =
               name: string;
           }[];
           func: ASTNode[];
-          x1: number;
-          y1: number;
-          x2: number;
-          y2: number;
-      }
-    | {
-          type: NodeType.Operator;
-          left: ASTNode;
-          expression: { op: string; right: ASTNode }[];
           x1: number;
           y1: number;
           x2: number;
@@ -230,7 +220,17 @@ function parseLine(
             value: token[0].value.slice(1, -1),
             x1: token[0].x,
             y1: token[0].y,
-            x2: token[0].x + token[0].value.length,
+            x2: token[0].x + token[0].value.length - 1,
+            y2: token[0].y,
+        };
+    } else if (AutoTokenIF(TokenType.number)) {
+        // MEMO:数字
+        returnAst.ast = {
+            type: NodeType.Number,
+            value: Number(token[0].value),
+            x1: token[0].x,
+            y1: token[0].y,
+            x2: token[0].x + token[0].value.length - 1,
             y2: token[0].y,
         };
     } else if (
@@ -252,7 +252,7 @@ function parseLine(
             )
         ) {
             // 初期化値がある変数宣言
-            let r = parseLine(token.slice(5));
+            let r = parseLine(token.slice(5), false);
             if (r.ast !== null) {
                 returnAst.ast = {
                     type: NodeType.InitVar,
@@ -371,6 +371,90 @@ function parseLine(
             token[0].value.length
         );
     } else if (
+        !NoOperator &&
+        returnAst.token.length > 1 &&
+        returnAst.token[0].type == TokenType.operator
+    ) {
+        let astTemp = { ...returnAst.ast };
+        let tt: Token[] = [...returnAst.token];
+        let first = astTemp;
+        let expressions: {
+            op: string;
+            right: ASTNode;
+        }[] = [];
+        while (tt.length > 0) {
+            if (tt[0].type != TokenType.operator) {
+                break;
+            }
+            let op = tt[0].value;
+            let opxy = { x: tt[0].x, y: tt[0].y };
+            tt.shift();
+            let r = parseLine(tt, false, true);
+            tt = r.token;
+            if (r.ast == null) {
+                expressions = [];
+                break;
+            }
+            expressions.push({
+                op: op,
+                right: r.ast,
+            });
+            returnAst.ast.x2 = r.ast.x2;
+            returnAst.ast.y2 = r.ast.y2;
+        }
+        let mulTemp: (string | ASTNode)[] = [first];
+        let add: (string | (string | ASTNode)[])[] = [];
+
+        for (let i in expressions) {
+            if (["+", "-"].includes(expressions[i].op)) {
+                add.push(mulTemp);
+                add.push(expressions[i].op);
+                mulTemp = [expressions[i].right];
+            } else {
+                mulTemp.push(expressions[i].op);
+                mulTemp.push(expressions[i].right);
+            }
+        }
+        add.push(mulTemp);
+        function d2(r: number, l: number): any {
+            if (l == add[r].length - 1) {
+                return add[r][l];
+            }
+            return [add[r][l], add[r][l + 1], d2(r, l + 2)];
+        }
+        function d(l: number): any {
+            if (l == add.length - 1) {
+                return d2(l, 0);
+            }
+            return [d2(l, 0), add[l + 1], d(l + 2)];
+        }
+        let opToFunction: { [key: string]: string } = {
+            "+": "add",
+            "-": "sub",
+            "*": "mul",
+            "/": "div",
+        };
+        function c(o: any): ASTNode {
+            if (o.length == 3) {
+                let o1 = c(o[0]);
+                let o2 = c(o[2]);
+                return {
+                    type: NodeType.FunctionCaller,
+                    args: [o1, o2],
+                    callFunctionName: opToFunction[o[1] as string],
+                    x1: o1.x1,
+                    x2: o2.x2,
+                    y1: o1.y1,
+                    y2: o2.y2,
+                };
+            } else {
+                return o;
+            }
+        }
+        returnAst.ast = c(d(0));
+        returnAst.token = tt;
+    }
+    if (
         mustSemi &&
         (returnAst.token.length == 0 ||
             returnAst.token[0].type !== TokenType.semi)
@@ -387,47 +471,9 @@ function parseLine(
     } else {
         if (mustSemi) {
             returnAst.token.shift();
-        } else {
-            if (
-                !NoOperator &&
-                returnAst.token.length > 1 &&
-                returnAst.token[0].type == TokenType.operator
-            ) {
-                let astTemp = { ...returnAst.ast };
-                let tt: Token[] = [...returnAst.token];
-                returnAst.ast = {
-                    type: NodeType.Operator,
-                    left: astTemp,
-                    expression: [],
-                    x1: astTemp.x1,
-                    y1: astTemp.y1,
-                    x2: 0,
-                    y2: 0,
-                };
-                while (tt.length > 0) {
-                    if (tt[0].type != TokenType.operator) {
-                        break;
-                    }
-                    let op = tt[0].value;
-                    tt.shift();
-                    let r = parseLine(tt, false, true);
-                    tt = r.token;
-                    if (r.ast == null) {
-                        returnAst.ast.expression = [];
-                        break;
-                    }
-                    returnAst.ast.expression.push({
-                        op: op,
-                        right: r.ast,
-                    });
-                    returnAst.ast.x2 = r.ast.x2;
-                    returnAst.ast.y2 = r.ast.y2;
-                }
-                returnAst.token = tt;
-            }
         }
     }
-    if (returnAst.ast != null) {
+    if (returnAst.ast != null && returnAst.ast.x2 == 0) {
         returnAst.ast.x1 = token[0].x;
         returnAst.ast.y1 = token[0].y;
         returnAst.ast.x2 =
@@ -439,4 +485,4 @@ function parseLine(
     return returnAst;
 }
 
-export { parser };
+export { parser, ASTNode, NodeType };

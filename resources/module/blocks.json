@@ -19,5 +19,11 @@
         "opcode": "operator_add",
         "type": "all",
         "return": "number"
+    },
+    "getSpriteName": {
+        "type": "value",
+        "args": [],
+        "argsName": [],
+        "return": "string"
     }
 }
