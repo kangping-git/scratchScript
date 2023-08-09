@@ -20,6 +20,27 @@
         "type": "all",
         "return": "number"
     },
+    "sub": {
+        "args": ["number", "number"],
+        "argsName": ["NUM1", "NUM2"],
+        "opcode": "operator_subtract",
+        "type": "all",
+        "return": "number"
+    },
+    "mul": {
+        "args": ["number", "number"],
+        "argsName": ["NUM1", "NUM2"],
+        "opcode": "operator_multiply",
+        "type": "all",
+        "return": "number"
+    },
+    "div": {
+        "args": ["number", "number"],
+        "argsName": ["NUM1", "NUM2"],
+        "opcode": "operator_divide",
+        "type": "all",
+        "return": "number"
+    },
     "getSpriteName": {
         "type": "value",
         "args": [],
