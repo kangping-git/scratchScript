@@ -89,8 +89,14 @@ function main(args: string[]) {
                 let tokens = lexer.lexer(code);
                 if (!alreadyError) {
                     let ast = parser.parser(tokens, code);
-                    for (let i in ast) {
-                        semantic.semantic(ast[i]);
+                    if (!alreadyError) {
+                        let astTemp: parser.ASTNode[] = [];
+                        for (let i in ast) {
+                            let a = semantic.semantic(ast[i]);
+                            if (a == null) {
+                                astTemp.push(ast[i]);
+                            }
+                        }
                     }
                 }
                 return;
