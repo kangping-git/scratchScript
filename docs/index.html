@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Scratch Script Docs - Scratch Script Docs</title>
+        <style>
+            :root {
+                --color: rgb(63, 63, 63);
+                --bgColor: white;
+                --accentColor: rgb(163, 255, 110);
+            }
+            @media (prefers-color-scheme: dark) {
+                :root {
+                    --bgColor: rgb(37, 37, 37);
+                    --color: white;
+                }
+            }
+            html,
+            body {
+                font-family: Consolas, "Courier New", monospace;
+                color: var(--color);
+                background-color: var(--bgColor);
+                margin: 0;
+                padding: 0;
+            }
+            article {
+                display: flex;
+                position: fixed;
+                transform: translateX(-50%);
+                left: 50%;
+            }
+            .side {
+                width: 200px;
+                border-right: 1px solid gray;
+            }
+            .side-content {
+                font-size: 20pt;
+                list-style: none;
+                padding-left: 5px;
+            }
+            a {
+                color: var(--color);
+            }
+            .side-ul {
+                font-size: 13pt;
+                list-style: disc;
+            }
+            main {
+                padding-left: 10px;
+                width: 789px;
+            }
+            .italic {
+                font-style: italic;
+            }
+            @media screen and (max-width: 1000px) {
+                main {
+                    margin-left: 70px;
+                    padding-left: 0;
+                    width: calc(100vw - 70px);
+                }
+                article {
+                    left: 0px;
+                    transform: translateX(0px);
+                }
+                .side {
+                    position: fixed;
+                    display: block;
+                    background-color: var(--accentColor);
+                    top: 0;
+                    left: 0;
+                    width: 60px;
+                    height: 100vh;
+                    border: none;
+                    box-shadow: dimgray 5px 0px 5px;
+                    z-index: 99999999999999;
+                }
+                .side-content {
+                    position: fixed;
+                    left: calc(-100vw);
+                    background-color: var(--accentColor);
+                    width: calc(100vw - 120px);
+                    max-width: 300px;
+                    height: 100vh;
+                    box-shadow: dimgray 5px 0px 5px;
+                    z-index: 500;
+                    transition: left 0.5s;
+                    padding-inline: 0;
+                    margin-block: 0;
+                    padding-left: 30px;
+                    color: black;
+                }
+                a {
+                    color: black;
+                }
+                .side:hover .side-content {
+                    left: 0px;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <article>
+            <div class="side">
+                <ul class="side-content">
+                    <li>目次</li>
+                    <li>
+                        <ul class="side-ul">
+                            <li><a href="..">home</a></li>
+                            <li><a href="">docs</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+            <main><h1>Scratch Script Docs</h1></main>
+        </article>
+    </body>
+</html>
