@@ -4,17 +4,21 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>404 not found - Scratch Script Docs</title>
-        <meta name="description" content="" />
+        <meta name="description" content="404 not found" />
         <style>
             :root {
                 --color: rgb(63, 63, 63);
                 --bgColor: white;
                 --accentColor: rgb(163, 255, 110);
+                --quoteColor: #3b3b3b;
+                --quoteBorderColor: #eee;
             }
             @media (prefers-color-scheme: dark) {
                 :root {
                     --bgColor: rgb(37, 37, 37);
                     --color: white;
+                    --quoteColor: #cacaca;
+                    --quoteBorderColor: #555;
                 }
             }
             html,
@@ -53,6 +57,12 @@
             }
             .italic {
                 font-style: italic;
+            }
+            blockquote {
+                border-left: 10px solid var(--quoteBorderColor);
+                margin-left: 0;
+                padding-left: 40px;
+                color: var(--quoteColor);
             }
             @media screen and (max-width: 1000px) {
                 main {
