@@ -13,13 +13,22 @@
         "type": "all",
         "return": null
     },
-    "add": {
-        "args": ["number", "number"],
-        "argsName": ["NUM1", "NUM2"],
-        "opcode": "operator_add",
-        "type": "all",
-        "return": "number"
-    },
+    "add": [
+        {
+            "args": ["number", "number"],
+            "argsName": ["NUM1", "NUM2"],
+            "opcode": "operator_add",
+            "type": "all",
+            "return": "number"
+        },
+        {
+            "args": ["string", "string"],
+            "argsName": ["STRING1", "STRING2"],
+            "opcode": "operator_join",
+            "type": "all",
+            "return": "string"
+        }
+    ],
     "sub": {
         "args": ["number", "number"],
         "argsName": ["NUM1", "NUM2"],
@@ -46,5 +55,12 @@
         "args": [],
         "argsName": [],
         "return": "string"
+    },
+    "whenSpriteClicked": {
+        "type": "event",
+        "args": ["string", "function"],
+        "argsName": [],
+        "return": "",
+        "opcode": "event_whenflagclicked"
     }
 }

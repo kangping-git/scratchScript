@@ -91,11 +91,13 @@ function main(args: string[]) {
                     let ast = parser.parser(tokens, code);
                     if (!alreadyError) {
                         let astTemp: parser.ASTNode[] = [];
+                        let variable = {};
                         for (let i in ast) {
-                            let a = semantic.semantic(ast[i]);
-                            if (a == null) {
+                            let a = semantic.semantic(ast[i], variable);
+                            if (a.r == null) {
                                 astTemp.push(ast[i]);
                             }
+                            variable = a.var;
                         }
                     }
                 }

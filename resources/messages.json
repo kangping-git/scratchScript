@@ -13,6 +13,7 @@
         "ERR011": "Missing comma in the function arguments list. Please check your function call and add the required comma.",
         "ERR012": "Type mismatch error. The assigned value does not match the expected data type.",
         "ERR013": "Function does not exist. Please make sure the function is defined before calling it.",
+        "ERR014": "Variable does not exist. Please make sure the variable is defined before calling it.",
         "WRN001": "Unused variable 'x'.",
         "WRN002": "This feature is experimental and may change in future versions."
     },
@@ -30,6 +31,7 @@
         "ERR011": "関数の引数リストにコンマが足りません。関数呼び出しを確認し、必要なコンマを追加してください。",
         "ERR012": "データ型不一致エラー。割り当てられた値が期待されるデータ型と一致しません。",
         "ERR013": "関数が存在しません。関数を呼び出す前に、関数が定義されていることを確認してください。",
+        "ERR014": "変数が存在しません。変数を呼び出す前に、変数が定義されていることを確認してください。",
         "WRN001": "未使用の変数 'x' です。",
         "WRN002": "この機能は実験的であり、将来のバージョンで変更される可能性があります。"
     }
